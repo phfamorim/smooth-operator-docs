@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Documentation for Smooth Operator, the SDF voxel remesher for Blender 5.1+ - install, settings reference, workflows, troubleshooting.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#129482;</text></svg>"><title>Smooth Operator — Documentation</title>
+<style>
+  :root{
+    --ink:#1D2426; --muted:#5D6B69; --paper:#FFFFFF;
+    --brand:#0B3B37; --accent:#0E7D74; --accent-soft:#E9F3F1; --accent-line:#BFD9D5;
+    --warn:#8A5A2B; --warn-soft:#F7EFE3; --line:#E0E7E5;
+    --mono:"Cascadia Mono","Cascadia Code",Consolas,monospace;
+  }
+  html{background:var(--paper);}
+  body{font-family:"Segoe UI",system-ui,sans-serif; color:var(--ink); line-height:1.55; margin:0; font-size:16px;}
+  .band{background:var(--brand); color:#F2F7F6;}
+  .band .inner{max-width:78ch; margin:0 auto; padding:40px 24px 32px;}
+  .band h1{
+    font-family:"Segoe UI Variable Display","Segoe UI",sans-serif;
+    font-size:2.3rem; font-weight:750; letter-spacing:-.02em; margin:0;
+  }
+  .band .sub{color:#A9CCC7; margin:6px 0 0; font-size:1.02rem;}
+  .band .meta{display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;}
+  .band .meta span{
+    font-family:var(--mono); font-size:.72rem; letter-spacing:.05em;
+    border:1px solid #2C5A55; border-radius:3px; padding:3px 10px; color:#CFE5E2;
+  }
+  .wrap{max-width:78ch; margin:0 auto; padding:12px 24px 96px;}
+  nav.toc{
+    display:flex; flex-wrap:wrap; gap:6px 18px; padding:16px 0 8px;
+    border-bottom:1px solid var(--line); font-size:.9rem;
+  }
+  nav.toc a{color:var(--accent); text-decoration:none;}
+  nav.toc a:hover,nav.toc a:focus{text-decoration:underline;}
+  h2{
+    font-family:"Segoe UI Variable Display","Segoe UI",sans-serif;
+    font-size:1.45rem; font-weight:700; letter-spacing:-.01em; margin:52px 0 10px;
+    padding-top:8px; text-wrap:balance;
+  }
+  h3{font-size:1.05rem; font-weight:650; margin:26px 0 8px;}
+  p{margin:0 0 13px; max-width:70ch;}
+  ul,ol{margin:0 0 15px; padding-left:22px; max-width:68ch;}
+  li{margin-bottom:6px;}
+  strong{font-weight:650;}
+  code{font-family:var(--mono); font-size:.84em; background:var(--accent-soft); padding:1px 5px; border-radius:3px;}
+  .tablewrap{overflow-x:auto; margin:10px 0 22px;}
+  table{border-collapse:collapse; width:100%; font-size:.92rem;}
+  th{text-align:left; font-weight:650; border-bottom:2px solid var(--ink); padding:6px 14px 6px 0; white-space:nowrap;}
+  td{border-bottom:1px solid var(--line); padding:9px 14px 9px 0; vertical-align:top;}
+  td.s{font-family:var(--mono); font-size:.8rem; white-space:nowrap; color:var(--accent); font-weight:600;}
+  td.d{font-family:var(--mono); font-size:.8rem; white-space:nowrap; color:var(--muted); font-variant-numeric:tabular-nums;}
+  .tip{
+    background:var(--accent-soft); border-left:4px solid var(--accent); border-radius:0 4px 4px 0;
+    padding:12px 16px; margin:14px 0 20px; max-width:70ch;
+  }
+  .tip p{margin:0;}
+  .caution{
+    background:var(--warn-soft); border-left:4px solid var(--warn); border-radius:0 4px 4px 0;
+    padding:12px 16px; margin:14px 0 20px; max-width:70ch;
+  }
+  .caution p{margin:0;}
+  .caution .lbl,.tip .lbl{
+    font-family:var(--mono); font-size:.68rem; letter-spacing:.09em; display:block; margin-bottom:4px;
+  }
+  .tip .lbl{color:var(--accent);}
+  .caution .lbl{color:var(--warn);}
+  .steps li{margin-bottom:10px;}
+  .qa dt{font-weight:650; margin-top:18px;}
+  .qa dd{margin:6px 0 0 0; max-width:68ch;}
+  footer{margin-top:64px; padding-top:20px; border-top:1px solid var(--line); color:var(--muted); font-size:.9rem;}
+  a{color:var(--accent);}
+</style>
+</head>
+<body>
+<div class="band"><div class="inner">
+  <h1>Smooth Operator</h1>
+  <p class="sub">SDF voxel remesher for Blender — documentation</p>
+  <div class="meta">
+    <span>VERSION 1.1.0</span>
+    <span>REQUIRES BLENDER 5.1+</span>
+    <span>GPL-3.0-OR-LATER</span>
+  </div>
+</div></div>
+
+<div class="wrap">
+
+<nav class="toc" aria-label="Contents">
+  <a href="#install">Install</a>
+  <a href="#quickstart">Quick start</a>
+  <a href="#modifier">The modifier</a>
+  <a href="#safety">Safety guards</a>
+  <a href="#buttons">Workflow buttons</a>
+  <a href="#sandwich">The boolean sandwich</a>
+  <a href="#bake">Bake-down pipeline</a>
+  <a href="#shortcuts">Shortcuts</a>
+  <a href="#upgrading">Upgrading &amp; portability</a>
+  <a href="#troubleshooting">Troubleshooting</a>
+  <a href="#changelog">Changelog</a>
+</nav>
+
+<h2 id="install">Install</h2>
+<p><strong>Blender 5.1 or newer is required.</strong> The SDF grid nodes this tool is built on don't exist in older versions — Blender will refuse to enable it there, with a version message.</p>
+<ol class="steps">
+  <li><strong>Extension (recommended):</strong> drag <code>smooth_operator-1.1.0-extension.zip</code> into the Blender window and confirm — or go to <em>Edit → Preferences → Get Extensions → Install from Disk</em> and pick the zip.</li>
+  <li><strong>Legacy add-on:</strong> <em>Edit → Preferences → Add-ons → Install</em>, pick <code>smooth_operator.zip</code>, then tick <strong>Smooth Operator</strong> in the list.</li>
+</ol>
+<p>Once enabled, the tools live in the 3D View sidebar (<code>N</code> key) under the <strong>Smooth Operator</strong> tab.</p>
+
+<h2 id="quickstart">Quick start</h2>
+<ol class="steps">
+  <li>Select one or more mesh objects.</li>
+  <li>Press <strong>Remesh</strong> in the Smooth Operator tab. Each object gets a live modifier with a <strong>Voxel Size chosen automatically from its dimensions</strong> — safe on any mesh.</li>
+  <li>Dial <strong>Voxel Size</strong> down for more detail, and <strong>Smoothness</strong> up or down to taste. Everything updates live; nothing is destructive.</li>
+</ol>
+<div class="tip"><span class="lbl">RULE OF THUMB</span>
+<p>Detail thinner than about <strong>two voxels</strong> disappears — that's how distance fields work. If a thin part vanishes, lower the Voxel Size before touching any filter.</p></div>
+
+<h2 id="modifier">The modifier, socket by socket</h2>
+
+<h3>Main settings</h3>
+<div class="tablewrap"><table>
+  <tr><th>Setting</th><th>Default</th><th>What it does</th></tr>
+  <tr><td class="s">Subdivide</td><td class="d">0</td><td>Crease-aware Catmull-Clark subdivision <em>before</em> remeshing. Rounds faceted lowpoly input so the facets don't burn into the result. Each level is 4× the input faces — runaway levels are clamped by the Safety guard.</td></tr>
+  <tr><td class="s">Use Creases</td><td class="d">on</td><td>Respect edge/vertex creases (<code>Shift+E</code>) during Subdivide, so creased edges hold their shape through the pre-smooth.</td></tr>
+  <tr><td class="s">Voxel Size</td><td class="d">auto</td><td>The resolution of the remesh, in scene units. Halving it roughly quadruples the face count and compute time. The Remesh button sets it to ~1/100 of the object's largest dimension.</td></tr>
+  <tr><td class="s">Adaptivity</td><td class="d">0</td><td>Merges flat areas into larger polygons at extraction time. 0 keeps the uniform, bake-safe grid. For quality low-poly, prefer the Decimate button instead (see below).</td></tr>
+  <tr><td class="s">Combine Elements</td><td class="d">on</td><td><strong>On:</strong> the whole object is treated as one solid — overlapping shells weld together. <strong>Off:</strong> every loose part is remeshed on its own and overlapping parts stay separate.</td></tr>
+  <tr><td class="s">Smooth Normals</td><td class="d">on</td><td>Writes custom normals sampled from the SDF gradient — shading with no faceting and no voxel ripple. Turn <strong>off</strong> on any remesh that gets boolean'd afterwards (the stacking button handles this for you), or the cut faces will shade black in Cycles.</td></tr>
+</table></div>
+
+<h3>Filters panel</h3>
+<p>OpenVDB level-set filters. They reshape the distance field itself, before the mesh exists — which is why they leave no tool marks on topology.</p>
+<div class="tablewrap"><table>
+  <tr><th>Filter</th><th>Default</th><th>The job</th></tr>
+  <tr><td class="s">Smoothness</td><td class="d">2</td><td>The main polishing pass (gaussian blur of the field). 2 is the classic OpenVDB look; higher polishes more but erodes thin detail first.</td></tr>
+  <tr><td class="s">Despike</td><td class="d">0</td><td>Median filter — removes spikes, needles and scan junk while keeping large edges crisp. 1–2 cleans up messy booleans and 3D scans without softening the whole model.</td></tr>
+  <tr><td class="s">Relax</td><td class="d">0</td><td>Mean-curvature flow — eases the tightest bends first (pinch lines, seams). Softens convex and concave alike; detail loss goes global above ~4.</td></tr>
+  <tr><td class="s">Concave Smooth</td><td class="d">0</td><td>Adds material <em>only in concave corners</em>, rounding boolean seams into fillets while convex edges stay untouched. Self-limiting — it converges instead of running away.</td></tr>
+  <tr><td class="s">Smooth Width</td><td class="d">1</td><td>Kernel radius (in voxels) for Smoothness and Despike. Width 2 smooths roughly like triple the iterations, in a single pass.</td></tr>
+  <tr><td class="s">Inflate/Deflate</td><td class="d">0</td><td>Fatten (positive) or erode (negative) the whole surface by a real-world distance. Stay within about two voxels of zero, or the surface leaves the field's narrow band and the mesh breaks up.</td></tr>
+</table></div>
+
+<h3 id="safety">Safety panel — the crash guards</h3>
+<p>Every voxel remesher has the same horror story: a Voxel Size typo — 0.0001 on a 2-meter prop — and Blender freezes with your unsaved work. Smooth Operator guards the two knobs that cause it, inside the modifier itself:</p>
+<ul>
+  <li>A <strong>Voxel Size</strong> finer than the surface can afford is clamped to the safety floor.</li>
+  <li>A <strong>Subdivide</strong> level that would multiply an already-dense mesh past the budget is clamped the same way.</li>
+</ul>
+<p>When either guard engages, the mesh still generates (just capped) and an <strong>orange warning appears on the modifier</strong> telling you which knob was clamped. Fix the value, or raise the cap deliberately:</p>
+<div class="tablewrap"><table>
+  <tr><th>Setting</th><th>Default</th><th>What it does</th></tr>
+  <tr><td class="s">Max Resolution</td><td class="d">500</td><td>The density cap behind both guards. For a compact object it means "at most this many voxels along the longest side"; sparse and multi-piece objects are budgeted by surface area, so they aren't penalized for a big bounding box. Raise it when you really need extreme density — 500 already allows roughly 1.5 million faces.</td></tr>
+</table></div>
+<div class="caution"><span class="lbl">SCOPE, HONESTLY</span>
+<p>The guards cover Voxel Size and Subdivide — the two classic remesher freezes. They won't rescue a 50-million-poly boolean elsewhere in your stack.</p></div>
+
+<h2 id="buttons">Workflow buttons</h2>
+
+<h3>Remesh</h3>
+<p>Adds the modifier to every selected mesh, with a safe automatic Voxel Size. Pressing it on an object that <em>already has</em> a Smooth Operator does something smarter — see <a href="#sandwich">the boolean sandwich</a>.</p>
+
+<h3>Visibility All / Visibility Selected — On | Off</h3>
+<p>Toggles every Smooth Operator modifier in the scene (or just on the selected objects) in the <strong>viewport only</strong> — renders are untouched. Park the heavy remeshes while you model; bring them back when you're done.</p>
+
+<h3>Decimate</h3>
+<p>Adds a pre-tuned Decimate (Collapse) modifier at the bottom of the stack. A uniform remesh plus quadric decimation gives cleaner low-poly than Adaptivity does — the error-driven collapse spends polygons where curvature needs them, and the smooth normals and materials ride along. Pressing it again retunes the existing Decimate instead of stacking another.</p>
+<div class="tip"><span class="lbl">TIP</span>
+<p>Decimate re-evaluates on every upstream tweak. Disable it in the viewport while dialing the remesh, or Collapse first and decimate the baked copy.</p></div>
+
+<h3>Collapse</h3>
+<p>Apply-everything, but reversible: bakes a copy of each selected object with all modifiers applied, files it into a collection (default <strong>"Collapsed Meshes"</strong> — the checkbox and name field next to the button control this), and hides the procedural original in place. Un-hide the original any time to keep editing. Materials and custom normals survive the bake.</p>
+
+<h2 id="sandwich">The boolean sandwich</h2>
+<p>The workflow this tool was built around: remesh, cut, remesh again.</p>
+<ol class="steps">
+  <li>Press <strong>Remesh</strong> — smooth the base shape.</li>
+  <li>Add your <strong>Boolean</strong> modifier above it. Use the <strong>MANIFOLD</strong> solver — it preserves loose-part structure where EXACT would weld the operand's own shells.</li>
+  <li>Press <strong>Remesh</strong> again. The button notices the existing pass and <em>stacks</em> a second one: settings copied from the first, <strong>Subdivide forced to 0</strong> (so a dense remeshed mesh never gets quadrupled — the classic freeze), and <strong>Smooth Normals moved to the final pass</strong> — mid-stack custom normals corrupt boolean cut faces, which is what renders black in Cycles.</li>
+  <li>Raise <strong>Concave Smooth</strong> on the final pass to round the boolean seams into fillets.</li>
+</ol>
+
+<h2 id="bake">Bake-down pipeline</h2>
+<p><strong>UVs and vertex data do not survive remeshing</strong> — the surface is rebuilt from scratch; that's true of every voxel remesher. Material <em>assignments</em> transfer automatically. The intended finishing pipeline:</p>
+<ol class="steps">
+  <li><strong>Collapse</strong> the finished object to a baked copy.</li>
+  <li><strong>Decimate</strong> (before or after Collapse) to your target polycount — the gradient normals survive.</li>
+  <li>Re-unwrap the baked copy, then <strong>bake normals</strong> from it (or from the full-res version onto it). The SDF-gradient shading bakes cleanly into normal maps — that's what it's for.</li>
+</ol>
+
+<h2 id="shortcuts">Shortcuts</h2>
+<p>Every panel button ships unbound. To assign keys: <em>Edit → Preferences → Add-ons → Smooth Operator</em> — each button has an editable shortcut field, bound into the 3D View keymap. (Blender's right-click "Assign Shortcut" doesn't work for custom-prefix operators — use the add-on preferences instead.)</p>
+
+<h2 id="upgrading">Upgrading &amp; file portability</h2>
+<ul>
+  <li><strong>Files stay portable.</strong> The remesher is a geometry-node group embedded in your .blend — scenes open, evaluate and render on machines that don't have the add-on installed. The panel buttons are the only thing that needs the install.</li>
+  <li><strong>Old files self-upgrade.</strong> After updating the add-on, press <strong>Remesh</strong> once in an old file: every existing Smooth Operator modifier migrates to the new version with its settings intact. Appended objects that bring their own copy of the node group are consolidated automatically.</li>
+  <li><strong>Updates are safe to install over</strong> the previous version — no need to uninstall first.</li>
+</ul>
+
+<h2 id="troubleshooting">Troubleshooting</h2>
+<dl class="qa">
+  <dt>Boolean'd areas render black in Cycles</dt>
+  <dd>A remesh <em>below</em> the boolean has Smooth Normals on — its baked custom normals corrupt the new cut faces. Turn Smooth Normals off on every pass except the last, or just use the stacking Remesh button, which does exactly that automatically.</dd>
+  <dt>An orange warning appeared on the modifier</dt>
+  <dd>A crash guard engaged: your Voxel Size (or Subdivide level) exceeded what the mesh can afford and was clamped. The result on screen is the capped version. Raise <strong>Max Resolution</strong> in the Safety panel if the density was intentional.</dd>
+  <dt>Thin parts disappear</dt>
+  <dd>Anything thinner than ~2 voxels can't be represented. Lower the Voxel Size (the guard has your back if you overshoot), and prefer Despike over Smoothness when cleaning junk near thin geometry.</dd>
+  <dt>The mesh breaks apart when inflating/deflating</dt>
+  <dd>Inflate/Deflate beyond about two voxels leaves the field's narrow band. Keep it small, or increase Voxel Size alongside it.</dd>
+  <dt>Open or non-manifold input gives odd results</dt>
+  <dd>A distance field represents closed, watertight surfaces. Open shells get thickened or partially eaten depending on voxel size — cap holes first for reliable conversion.</dd>
+  <dt>It feels slow on a huge mesh</dt>
+  <dd>The remesher runs on Blender's geometry-nodes evaluator (CPU). Reference: a 129k-triangle prop updates in ~70 ms on a 13th-gen desktop Intel. If you're far off that, check for an accidental Subdivide on dense input (the guard warns), park other remeshes with the Visibility buttons, and disable Decimate while dialing.</dd>
+</dl>
+
+<h2 id="changelog">Changelog</h2>
+<h3>1.1.0</h3>
+<ul>
+  <li><strong>New:</strong> voxel-size crash guard — Voxel Size finer than the object can afford is clamped, with a warning on the modifier. Surface-area-based budget; <strong>Max Resolution</strong> cap in the new Safety panel.</li>
+  <li><strong>New:</strong> Subdivide crash guard — levels that would blow the face budget on dense input are clamped the same way. Subdividing lowpoly input is unaffected.</li>
+  <li>Upgrade safety: modifiers that were deliberately running finer than the default cap keep their exact results after updating (the cap seeds itself from the voxel in use).</li>
+</ul>
+<h3>1.0.0</h3>
+<ul>
+  <li>Initial release: SDF voxel remesher with OpenVDB level-set filters (Smoothness / Despike / Relax / Concave Smooth), automatic material transfer, SDF-gradient smooth normals, per-element remeshing, crease-aware pre-subdivision, and the workflow button set (stacking Remesh, visibility toggles, Decimate, Collapse).</li>
+</ul>
+
+<footer>
+  <p><strong>Support:</strong> phfamorim@gmail.com — replies within 2 business days.<br>
+  Smooth Operator © Pedro Amorim · add-on code licensed GPL-3.0-or-later · requires Blender 5.1+</p>
+</footer>
+
+</div>
+
+</body>
+</html>
