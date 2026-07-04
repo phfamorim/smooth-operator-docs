@@ -119,10 +119,10 @@
 <h2 id="modifier">The modifier, socket by socket</h2>
 
 <h3>Main settings</h3>
+<div class="tip"><span class="lbl">PRE-SMOOTHING LOWPOLY INPUT</span>
+<p>To round faceted lowpoly input before it hits the voxel grid, put a plain <strong>Subdivision Surface</strong> modifier above the remesh — Blender's own, creases and all. (Earlier builds had a Subdivide input inside the modifier; it was removed in favor of the native one, and old files get a real Subdivision Surface modifier inserted automatically on upgrade.)</p></div>
 <div class="tablewrap"><table>
   <tr><th>Setting</th><th>Default</th><th>What it does</th></tr>
-  <tr><td class="s">Subdivide</td><td class="d">0</td><td>Crease-aware Catmull-Clark subdivision <em>before</em> remeshing. Rounds faceted lowpoly input so the facets don't burn into the result. Each level is 4× the input faces — runaway levels are clamped by the Safety guard.</td></tr>
-  <tr><td class="s">Use Creases</td><td class="d">on</td><td>Respect edge/vertex creases (<code>Shift+E</code>) during Subdivide, so creased edges hold their shape through the pre-smooth.</td></tr>
   <tr><td class="s">Voxel Size</td><td class="d">auto</td><td>The resolution of the remesh, in scene units. Halving it roughly quadruples the face count and compute time. The Remesh button sets it to ~1/100 of the object's largest dimension.</td></tr>
   <tr><td class="s">Adaptivity</td><td class="d">0</td><td>Merges flat areas into larger polygons at extraction time. 0 keeps the uniform, bake-safe grid. For quality low-poly, prefer the Decimate button instead (see below).</td></tr>
   <tr><td class="s">Combine Elements</td><td class="d">on</td><td><strong>On:</strong> the whole object is treated as one solid — overlapping shells weld together. <strong>Off:</strong> every loose part is remeshed on its own and overlapping parts stay separate.</td></tr>
@@ -141,19 +141,14 @@
   <tr><td class="s">Inflate/Deflate</td><td class="d">0</td><td>Fatten (positive) or erode (negative) the whole surface by a real-world distance. Stay within about two voxels of zero, or the surface leaves the field's narrow band and the mesh breaks up.</td></tr>
 </table></div>
 
-<h3 id="safety">Safety panel — the crash guards</h3>
-<p>Every voxel remesher has the same horror story: a Voxel Size typo — 0.0001 on a 2-meter prop — and Blender freezes with your unsaved work. Smooth Operator guards the two knobs that cause it, inside the modifier itself:</p>
-<ul>
-  <li>A <strong>Voxel Size</strong> finer than the surface can afford is clamped to the safety floor.</li>
-  <li>A <strong>Subdivide</strong> level that would multiply an already-dense mesh past the budget is clamped the same way.</li>
-</ul>
-<p>When either guard engages, the mesh still generates (just capped) and an <strong>orange warning appears on the modifier</strong> telling you which knob was clamped. Fix the value, or raise the cap deliberately:</p>
+<h3 id="safety">Safety panel — the crash guard</h3>
+<p>Every voxel remesher has the same horror story: a Voxel Size typo — 0.0001 on a 2-meter prop — and Blender freezes with your unsaved work. Smooth Operator clamps a Voxel Size finer than the surface can afford to a safety floor, inside the modifier itself. The mesh still generates (just capped) and an <strong>orange warning appears on the modifier</strong>. Fix the value, or raise the cap deliberately:</p>
 <div class="tablewrap"><table>
   <tr><th>Setting</th><th>Default</th><th>What it does</th></tr>
-  <tr><td class="s">Max Resolution</td><td class="d">500</td><td>The density cap behind both guards. For a compact object it means "at most this many voxels along the longest side"; sparse and multi-piece objects are budgeted by surface area, so they aren't penalized for a big bounding box. Raise it when you really need extreme density — 500 already allows roughly 1.5 million faces.</td></tr>
+  <tr><td class="s">Max Resolution</td><td class="d">500</td><td>The density cap behind the guard. For a compact object it means "at most this many voxels along the longest side"; sparse and multi-piece objects are budgeted by surface area, so they aren't penalized for a big bounding box. Raise it when you really need extreme density — 500 already allows roughly 1.5 million faces.</td></tr>
 </table></div>
 <div class="caution"><span class="lbl">SCOPE, HONESTLY</span>
-<p>The guards cover Voxel Size and Subdivide — the two classic remesher freezes. They won't rescue a 50-million-poly boolean elsewhere in your stack.</p></div>
+<p>The guard covers Voxel Size — the classic remesher freeze. It won't rescue a 50-million-poly boolean elsewhere in your stack, or a Subdivision Surface modifier cranked on a dense mesh.</p></div>
 
 <h2 id="buttons">Workflow buttons</h2>
 
@@ -162,6 +157,12 @@
 
 <h3>Visibility All / Visibility Selected — On | Off</h3>
 <p>Toggles every Smooth Operator modifier in the scene (or just on the selected objects) in the <strong>viewport only</strong> — renders are untouched. Park the heavy remeshes while you model; bring them back when you're done.</p>
+
+<h3>Preview Mode</h3>
+<p>A fast viewport that stays one click from bake quality. While the toggle is on, the <strong>last</strong> Smooth Operator of every stack gets the preview <strong>Adaptivity</strong> (default 0.1, slider under the toggle) — flat areas merge into big polygons, cutting the face count hard — and every earlier pass stays at 0. Only the last pass matters: adaptivity anywhere else is paid for and then remeshed away. Stacking a new remesh hands the preview to the new last pass automatically.</p>
+<p>Turning it off restores Adaptivity 0 everywhere — the uniform, bake-safe grid. <strong>Collapse always bakes final quality</strong>, ignoring Preview Mode.</p>
+<div class="caution"><span class="lbl">BEFORE A FINAL RENDER</span>
+<p>Preview adaptivity is a real modifier value — it applies to renders too, including on machines without the add-on installed. Turn Preview Mode off before final renders and before shipping a .blend.</p></div>
 
 <h3>Decimate</h3>
 <p>Adds a pre-tuned Decimate (Collapse) modifier at the bottom of the stack. A uniform remesh plus quadric decimation gives cleaner low-poly than Adaptivity does — the error-driven collapse spends polygons where curvature needs them, and the smooth normals and materials ride along. Pressing it again retunes the existing Decimate instead of stacking another.</p>
@@ -176,7 +177,7 @@
 <ol class="steps">
   <li>Press <strong>Remesh</strong> — smooth the base shape.</li>
   <li>Add your <strong>Boolean</strong> modifier above it. Use the <strong>MANIFOLD</strong> solver — it preserves loose-part structure where EXACT would weld the operand's own shells.</li>
-  <li>Press <strong>Remesh</strong> again. The button notices the existing pass and <em>stacks</em> a second one: settings copied from the first, <strong>Subdivide forced to 0</strong> (so a dense remeshed mesh never gets quadrupled — the classic freeze), and <strong>Smooth Normals moved to the final pass</strong> — mid-stack custom normals corrupt boolean cut faces, which is what renders black in Cycles.</li>
+  <li>Press <strong>Remesh</strong> again. The button notices the existing pass and <em>stacks</em> a second one: settings copied from the first, and <strong>Smooth Normals moved to the final pass</strong> — mid-stack custom normals corrupt boolean cut faces, which is what renders black in Cycles.</li>
   <li>Raise <strong>Concave Smooth</strong> on the final pass to round the boolean seams into fillets.</li>
 </ol>
 
@@ -203,7 +204,7 @@
   <dt>Boolean'd areas render black in Cycles</dt>
   <dd>A remesh <em>below</em> the boolean has Smooth Normals on — its baked custom normals corrupt the new cut faces. Turn Smooth Normals off on every pass except the last, or just use the stacking Remesh button, which does exactly that automatically.</dd>
   <dt>An orange warning appeared on the modifier</dt>
-  <dd>A crash guard engaged: your Voxel Size (or Subdivide level) exceeded what the mesh can afford and was clamped. The result on screen is the capped version. Raise <strong>Max Resolution</strong> in the Safety panel if the density was intentional.</dd>
+  <dd>The crash guard engaged: your Voxel Size exceeded what the mesh can afford and was clamped. The result on screen is the capped version. Raise <strong>Max Resolution</strong> in the Safety panel if the density was intentional.</dd>
   <dt>Thin parts disappear</dt>
   <dd>Anything thinner than ~2 voxels can't be represented. Lower the Voxel Size (the guard has your back if you overshoot), and prefer Despike over Smoothness when cleaning junk near thin geometry.</dd>
   <dt>The mesh breaks apart when inflating/deflating</dt>
@@ -211,14 +212,20 @@
   <dt>Open or non-manifold input gives odd results</dt>
   <dd>A distance field represents closed, watertight surfaces. Open shells get thickened or partially eaten depending on voxel size — cap holes first for reliable conversion.</dd>
   <dt>It feels slow on a huge mesh</dt>
-  <dd>The remesher runs on Blender's geometry-nodes evaluator (CPU). Reference: a 129k-triangle prop updates in ~70 ms on a 13th-gen desktop Intel. If you're far off that, check for an accidental Subdivide on dense input (the guard warns), park other remeshes with the Visibility buttons, and disable Decimate while dialing.</dd>
+  <dd>The remesher runs on Blender's geometry-nodes evaluator (CPU). Reference: a 129k-triangle prop updates in ~70 ms on a 13th-gen desktop Intel. If you're far off that, check for a Subdivision Surface modifier cranked on dense input, turn on <strong>Preview Mode</strong> while you model, park other remeshes with the Visibility buttons, and disable Decimate while dialing.</dd>
+  <dt>My Adaptivity value keeps changing on its own</dt>
+  <dd>Preview Mode manages the Adaptivity of the last pass (and zeroes the others) whenever it's toggled or its value changes. Turn Preview Mode off if you want to drive Adaptivity by hand — though for quality low-poly, the Decimate button beats Adaptivity anyway.</dd>
+  <dt>Renders look decimated / flat-shaded in patches</dt>
+  <dd>Preview Mode was left on — its adaptivity applies to renders too. Turn it off before final renders.</dd>
 </dl>
 
 <h2 id="changelog">Changelog</h2>
 <h3>1.1.0</h3>
 <ul>
   <li><strong>New:</strong> voxel-size crash guard — Voxel Size finer than the object can afford is clamped, with a warning on the modifier. Surface-area-based budget; <strong>Max Resolution</strong> cap in the new Safety panel.</li>
-  <li><strong>New:</strong> Subdivide crash guard — levels that would blow the face budget on dense input are clamped the same way. Subdividing lowpoly input is unaffected.</li>
+  <li><strong>New:</strong> Preview Mode — the last remesh of every stack carries a preview Adaptivity for a fast viewport; off restores the bake-safe grid; Collapse always bakes final quality.</li>
+  <li><strong>Changed:</strong> the built-in Subdivide / Use Creases inputs were removed — use Blender's own Subdivision Surface modifier above the remesh. Old files upgrade automatically with a matching Subdivision Surface inserted, so results don't change.</li>
+  <li><strong>Changed:</strong> modifiers are created with edit-mode display off, keeping quick edit-mode fixes fast.</li>
   <li>Upgrade safety: modifiers that were deliberately running finer than the default cap keep their exact results after updating (the cap seeds itself from the voxel in use).</li>
 </ul>
 <h3>1.0.0</h3>
