@@ -195,7 +195,7 @@
 <h2 id="upgrading">Upgrading &amp; file portability</h2>
 <ul>
   <li><strong>Files stay portable.</strong> The remesher is a geometry-node group embedded in your .blend — scenes open, evaluate and render on machines that don't have the add-on installed. The panel buttons are the only thing that needs the install.</li>
-  <li><strong>Old files self-upgrade.</strong> After updating the add-on, press <strong>Remesh</strong> once in an old file: every existing Smooth Operator modifier migrates to the new version with its settings intact. Appended objects that bring their own copy of the node group are consolidated automatically.</li>
+  <li><strong>Old files self-upgrade on open.</strong> After updating the add-on, just open an old file: every existing Smooth Operator modifier migrates to the new version automatically, settings intact. Appended objects that bring their own copy of the node group are consolidated too. (Pressing <strong>Remesh</strong> also triggers the same upgrade, if the file was opened before the add-on was updated.)</li>
   <li><strong>Updates are safe to install over</strong> the previous version — no need to uninstall first.</li>
 </ul>
 
