@@ -134,10 +134,10 @@
 <div class="tablewrap"><table>
   <tr><th>Filter</th><th>Default</th><th>The job</th></tr>
   <tr><td class="s">Smoothness</td><td class="d">2</td><td>The main polishing pass (gaussian blur of the field). 2 is the classic OpenVDB look; higher polishes more but erodes thin detail first.</td></tr>
-  <tr><td class="s">Despike</td><td class="d">0</td><td>Median filter — removes spikes, needles and scan junk while keeping large edges crisp. 1–2 cleans up messy booleans and 3D scans without softening the whole model.</td></tr>
+  <tr><td class="s">Despike</td><td class="d">0</td><td>Median filter — removes spikes, needles and scan junk while keeping large edges crisp. 1–2 cleans up messy booleans and 3D scans without softening the whole model. Each iteration also erodes curved regions slightly, so high values pull the surface inward — a look, not a bug.</td></tr>
+  <tr><td class="s">Filter Width</td><td class="d">1</td><td>Kernel radius (in voxels) for the two filters above — Smoothness and Despike. Width 2 smooths roughly like triple the iterations, in a single pass. Relax and Concave Smooth are not affected.</td></tr>
   <tr><td class="s">Relax</td><td class="d">0</td><td>Mean-curvature flow — eases the tightest bends first (pinch lines, seams). Softens convex and concave alike; detail loss goes global above ~4.</td></tr>
   <tr><td class="s">Concave Smooth</td><td class="d">0</td><td>Adds material <em>only in concave corners</em>, rounding boolean seams into fillets while convex edges stay untouched. Self-limiting — it converges instead of running away.</td></tr>
-  <tr><td class="s">Smooth Width</td><td class="d">1</td><td>Kernel radius (in voxels) for Smoothness and Despike. Width 2 smooths roughly like triple the iterations, in a single pass.</td></tr>
   <tr><td class="s">Inflate/Deflate</td><td class="d">0</td><td>Fatten (positive) or erode (negative) the whole surface by a real-world distance. Stay within about two voxels of zero, or the surface leaves the field's narrow band and the mesh breaks up.</td></tr>
 </table></div>
 
@@ -226,6 +226,9 @@
   <li><strong>New:</strong> Preview Mode — the last remesh of every stack carries a preview Adaptivity for a fast viewport; off restores the bake-safe grid; Collapse always bakes final quality.</li>
   <li><strong>Changed:</strong> the built-in Subdivide / Use Creases inputs were removed — use Blender's own Subdivision Surface modifier above the remesh. Old files upgrade automatically with a matching Subdivision Surface inserted, so results don't change.</li>
   <li><strong>Changed:</strong> modifiers are created with edit-mode display off, keeping quick edit-mode fixes fast.</li>
+  <li><strong>Changed:</strong> "Smooth Width" is now <strong>Filter Width</strong> and sits directly under the two filters it scales (Smoothness and Despike).</li>
+  <li><strong>Changed:</strong> the arrow buttons on Voxel Size and Inflate/Deflate step in millimeters instead of whole centimeters.</li>
+  <li><strong>Fixed:</strong> blotchy shading normals with Filter Width above 1 (the SDF's narrow band now scales with the filter settings) and while Despike is active (the normal source gets a small smoothing pass; the surface is untouched).</li>
   <li>Upgrade safety: modifiers that were deliberately running finer than the default cap keep their exact results after updating (the cap seeds itself from the voxel in use).</li>
 </ul>
 <h3>1.0.0</h3>
