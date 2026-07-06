@@ -135,11 +135,8 @@
     max-width:1200px; margin:0 auto; padding:28px 24px 110px;
     display:grid; grid-template-columns:minmax(0,1fr); gap:0 56px;
   }
-  /* the COLUMN is wide (tables breathe, no scrollbars); the TEXT keeps
-     its 70ch reading measure via the child rule below */
+  /* one width for everything - text, tips, tables all span the column */
   main.doc{max-width:850px; min-width:0;}
-  main.doc p, main.doc ul, main.doc ol, main.doc dl,
-  main.doc .tip, main.doc .caution{max-width:70ch;}
   @media (min-width:1080px){
     .layout{grid-template-columns:210px minmax(0,850px); justify-content:center;}
   }
