@@ -181,6 +181,8 @@
   <li>Press <strong>Remesh</strong> again. The button notices the existing pass and <em>stacks</em> a second one: settings copied from the first, and <strong>Smooth Normals moved to the final pass</strong> — mid-stack custom normals corrupt boolean cut faces, which is what renders black in Cycles.</li>
   <li>Raise <strong>Concave Smooth</strong> on the final pass to round the boolean seams into fillets.</li>
 </ol>
+<div class="tip"><span class="lbl">DELETING A PASS</span>
+<p>Remove the last Smooth Operator and the previous pass takes over its role automatically — Smooth Normals comes back (keeping the deleted pass's on/off choice) and the preview Adaptivity moves over. A pass that still has a boolean after it is never given normals (that would render black in Cycles), and deleting middle passes or renaming modifiers changes nothing.</p></div>
 
 <h2 id="bake">Bake-down pipeline</h2>
 <p><strong>UVs and vertex data do not survive remeshing</strong> — the surface is rebuilt from scratch; that's true of every voxel remesher. Material <em>assignments</em> transfer automatically. The intended finishing pipeline:</p>
@@ -223,7 +225,9 @@
 <h2 id="changelog">Changelog</h2>
 <h3>1.1.0</h3>
 <ul>
-  <li><strong>New:</strong> voxel-size crash guard — Voxel Size finer than the object can afford is clamped, with a warning on the modifier. Surface-area-based budget; <strong>Max Resolution</strong> cap in the new Safety panel.</li>
+  <li><strong>New:</strong> voxel-size crash guard — catastrophe-level Voxel Size requests are clamped, with a warning on the modifier that states the effective size and the Max Resolution needed for the requested one. Surface-area-based budget (default ~24M faces) in the Safety panel — calibrated so deliberate fine-voxel work always passes untouched.</li>
+  <li><strong>New:</strong> deleting the last Smooth Operator of a stack hands its role to the previous pass automatically — Smooth Normals (carrying the deleted pass's on/off choice) and the preview Adaptivity move over. A pass with a boolean still after it is never given normals, and renaming modifiers never triggers any of this.</li>
+  <li><strong>New:</strong> old files upgrade automatically the moment they're opened — no button press needed.</li>
   <li><strong>New:</strong> Preview Mode — the last remesh of every stack carries a preview Adaptivity for a fast viewport; off restores the bake-safe grid; Collapse always bakes final quality.</li>
   <li><strong>Changed:</strong> the built-in Subdivide / Use Creases inputs were removed — use Blender's own Subdivision Surface modifier above the remesh. Old files upgrade automatically with a matching Subdivision Surface inserted, so results don't change.</li>
   <li><strong>Changed:</strong> modifiers are created with edit-mode display off, keeping quick edit-mode fixes fast.</li>
