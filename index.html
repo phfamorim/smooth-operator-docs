@@ -7,84 +7,388 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#129482;</text></svg>">
 <title>Smooth Operator — Documentation</title>
 <style>
+  /* ---------------------------------------------------------------
+     DARK FORGE — machined spec-sheet for a precision remesher
+     ground: warm near-blacks · accent: glossy red-copper matcap
+     --------------------------------------------------------------- */
   :root{
-    --ink:#1D2426; --muted:#5D6B69; --paper:#FFFFFF;
-    --brand:#0B3B37; --accent:#0E7D74; --accent-soft:#E9F3F1; --accent-line:#BFD9D5;
-    --warn:#8A5A2B; --warn-soft:#F7EFE3; --line:#E0E7E5;
-    --mono:"Cascadia Mono","Cascadia Code",Consolas,monospace;
+    --bg:#0E0F11;            /* page ground */
+    --bg-deep:#0A0B0D;       /* masthead base */
+    --panel:#15161A;         /* raised plates */
+    --panel-2:#1B1D21;       /* table heads, code chips */
+    --line:#26282D;          /* hairline panel gaps */
+    --line-2:#34373D;        /* brighter hairline */
+    --ink:#D9D6D0;           /* warm off-white body */
+    --ink-strong:#F2EEE7;
+    --dim:#9C978F;
+    --faint:#6E6961;
+    --cu:#D96A38;            /* copper */
+    --cu-hot:#F09468;        /* copper highlight */
+    --cu-deep:#8C3120;       /* deep red */
+    --cu-ember:#C84A2E;      /* caution heat */
+    --steel:#93B4BF;         /* polished-steel tip accent */
+    --amber:#D8B25C;         /* "fixed" tag */
+    --mono:"Cascadia Mono","Cascadia Code",Consolas,"SF Mono",ui-monospace,Menlo,monospace;
+    --disp:"Segoe UI Variable Display","Segoe UI","Avenir Next","Helvetica Neue",system-ui,sans-serif;
+    --text:"Segoe UI Variable Text","Segoe UI","Avenir Next",system-ui,sans-serif;
+    /* machined radii: one big fillet, one tight chamfer, mirrored */
+    --plate-r:4px 16px 4px 16px;
+    --chip-r:3px 9px 3px 9px;
   }
-  html{background:var(--paper);}
-  body{font-family:"Segoe UI",system-ui,sans-serif; color:var(--ink); line-height:1.55; margin:0; font-size:16px;}
-  .band{background:var(--brand); color:#F2F7F6;}
-  .band .inner{max-width:78ch; margin:0 auto; padding:40px 24px 32px;}
-  .band h1{
-    font-family:"Segoe UI Variable Display","Segoe UI",sans-serif;
-    font-size:2.3rem; font-weight:750; letter-spacing:-.02em; margin:0;
+  *{box-sizing:border-box;}
+  html{background:var(--bg);}
+  @media (prefers-reduced-motion: no-preference){
+    html{scroll-behavior:smooth;}
   }
-  .band .sub{color:#A9CCC7; margin:6px 0 0; font-size:1.02rem;}
-  .band .meta{display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;}
-  .band .meta span{
-    font-family:var(--mono); font-size:.72rem; letter-spacing:.05em;
-    border:1px solid #2C5A55; border-radius:3px; padding:3px 10px; color:#CFE5E2;
+  body{
+    margin:0; font-family:var(--text); color:var(--ink);
+    font-size:16px; line-height:1.62;
+    -webkit-font-smoothing:antialiased;
   }
-  .wrap{max-width:78ch; margin:0 auto; padding:12px 24px 96px;}
+  ::selection{background:rgba(217,106,56,.35); color:var(--ink-strong);}
+  [id]{scroll-margin-top:28px;}
+
+  /* ============ MASTHEAD ============ */
+  .mast{
+    position:relative; overflow:hidden;
+    background:linear-gradient(180deg,#131418 0%, var(--bg-deep) 100%);
+    border-bottom:1px solid #050506;
+    box-shadow:0 1px 0 var(--line);         /* machined seam under the plate */
+  }
+  .mast::before{                             /* voxel grid that dissolves to the right */
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background-image:
+      linear-gradient(#1D1F24 1px, transparent 1px),
+      linear-gradient(90deg,#1D1F24 1px, transparent 1px);
+    background-size:28px 28px;
+    -webkit-mask-image:linear-gradient(100deg, rgba(0,0,0,.85) 8%, transparent 62%);
+    mask-image:linear-gradient(100deg, rgba(0,0,0,.85) 8%, transparent 62%);
+  }
+  .mast::after{                              /* hot-metal glow pooling under the curve */
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:radial-gradient(640px 240px at 82% 96%, rgba(217,106,56,.16), transparent 70%);
+  }
+  .mast-in{
+    position:relative; z-index:1;
+    max-width:1200px; margin:0 auto; padding:56px 24px 0;
+    display:flex; flex-wrap:wrap; align-items:flex-end; gap:8px 48px;
+  }
+  .mast-copy{padding-bottom:40px; flex:1 1 340px; min-width:0;}
+  .mast h1{
+    font-family:var(--disp);
+    font-size:clamp(2.3rem, 5.4vw, 3.5rem);
+    font-weight:800; letter-spacing:-.03em; line-height:1.04;
+    margin:0; color:var(--ink-strong); text-wrap:balance;
+  }
+  .mast h1 .cu{
+    background:linear-gradient(100deg, var(--cu-deep) 0%, var(--cu) 45%, var(--cu-hot) 85%);
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent; color:transparent;
+  }
+  .mast .sub{
+    color:var(--dim); margin:12px 0 0; font-size:1.05rem; max-width:52ch;
+  }
+  .mast .tagline{
+    font-family:var(--mono); font-size:.78rem; letter-spacing:.03em;
+    color:var(--faint); margin:10px 0 0; max-width:60ch;
+  }
+  .mast .tagline::before{content:"// "; color:var(--cu);}
+  .mast .meta{display:flex; gap:8px; flex-wrap:wrap; margin-top:22px;}
+  .mast .meta span{
+    font-family:var(--mono); font-size:.68rem; letter-spacing:.1em;
+    border:1px solid var(--line-2); border-radius:var(--chip-r);
+    padding:4px 11px; color:var(--dim); background:rgba(21,22,26,.7);
+  }
+  .mast .meta span:first-child{
+    color:var(--cu-hot); border-color:rgba(217,106,56,.45);
+    box-shadow:0 0 14px rgba(217,106,56,.14);
+  }
+  /* voxel-stair → silk-curve motif */
+  .motif{
+    flex:0 1 520px; min-width:260px; max-width:100%;
+    display:block; height:auto; margin-left:auto;
+    align-self:flex-end;
+  }
+  @media (prefers-reduced-motion: no-preference){
+    .motif .draw{
+      stroke-dasharray:1400; stroke-dashoffset:1400;
+      animation:forge-draw 1.5s cubic-bezier(.4,0,.2,1) .15s forwards;
+    }
+    @keyframes forge-draw{to{stroke-dashoffset:0;}}
+  }
+
+  /* ============ LAYOUT ============ */
+  .layout{
+    max-width:1200px; margin:0 auto; padding:28px 24px 110px;
+    display:grid; grid-template-columns:minmax(0,1fr); gap:0 56px;
+  }
+  main.doc{max-width:70ch; min-width:0;}
+  @media (min-width:1080px){
+    .layout{grid-template-columns:210px minmax(0,70ch); justify-content:center;}
+  }
+
+  /* ============ TOC ============ */
   nav.toc{
-    display:flex; flex-wrap:wrap; gap:6px 18px; padding:16px 0 8px;
-    border-bottom:1px solid var(--line); font-size:.9rem;
+    display:flex; flex-wrap:wrap; gap:8px; align-content:flex-start;
+    padding:2px 0 22px; margin-bottom:6px;
+    border-bottom:1px solid var(--line);
   }
-  nav.toc a{color:var(--accent); text-decoration:none;}
-  nav.toc a:hover,nav.toc a:focus{text-decoration:underline;}
+  nav.toc::before{
+    content:"CONTENTS"; flex-basis:100%;
+    font-family:var(--mono); font-size:.64rem; letter-spacing:.22em;
+    color:var(--faint); margin-bottom:2px;
+  }
+  nav.toc a{
+    font-size:.84rem; color:var(--dim); text-decoration:none;
+    border:1px solid var(--line); border-radius:var(--chip-r);
+    padding:5px 11px; background:var(--panel);
+    transition:color .15s, border-color .15s, background .15s;
+  }
+  nav.toc a:hover, nav.toc a:focus-visible{
+    color:var(--ink-strong); border-color:var(--line-2);
+  }
+  nav.toc a[aria-current]{
+    color:var(--cu-hot); border-color:rgba(217,106,56,.5);
+    background:linear-gradient(90deg, rgba(217,106,56,.12), rgba(217,106,56,.03));
+  }
+  @media (min-width:1080px){
+    nav.toc{
+      display:block; position:sticky; top:26px; align-self:start;
+      border-bottom:0; padding:0; margin:8px 0 0;
+    }
+    nav.toc::before{display:block; margin-bottom:10px;}
+    nav.toc a{
+      display:block; background:none; border:0; border-left:2px solid var(--line);
+      border-radius:0 8px 8px 0; padding:6px 12px 6px 14px; margin:0;
+      font-size:.86rem;
+    }
+    nav.toc a:hover, nav.toc a:focus-visible{
+      color:var(--ink-strong); border-left-color:var(--line-2); background:rgba(255,255,255,.02);
+    }
+    nav.toc a[aria-current]{
+      color:var(--cu-hot); border-left-color:var(--cu);
+      background:linear-gradient(90deg, rgba(217,106,56,.12), transparent 80%);
+      box-shadow:-1px 0 8px -2px rgba(217,106,56,.35);
+    }
+  }
+
+  /* ============ TYPE ============ */
+  main.doc{counter-reset:sec;}
   h2{
-    font-family:"Segoe UI Variable Display","Segoe UI",sans-serif;
-    font-size:1.45rem; font-weight:700; letter-spacing:-.01em; margin:52px 0 10px;
-    padding-top:8px; text-wrap:balance;
+    font-family:var(--disp); color:var(--ink-strong);
+    font-size:1.5rem; font-weight:750; letter-spacing:-.015em;
+    margin:66px 0 16px; padding:24px 0 12px; position:relative;
+    border-bottom:1px solid var(--line); text-wrap:balance;
+    counter-increment:sec;
   }
-  h3{font-size:1.05rem; font-weight:650; margin:26px 0 8px;}
-  p{margin:0 0 13px; max-width:70ch;}
-  ul,ol{margin:0 0 15px; padding-left:22px; max-width:68ch;}
-  li{margin-bottom:6px;}
-  strong{font-weight:650;}
-  code{font-family:var(--mono); font-size:.84em; background:var(--accent-soft); padding:1px 5px; border-radius:3px;}
-  .tablewrap{overflow-x:auto; margin:10px 0 22px;}
-  table{border-collapse:collapse; width:100%; font-size:.92rem;}
-  th{text-align:left; font-weight:650; border-bottom:2px solid var(--ink); padding:6px 14px 6px 0; white-space:nowrap;}
-  td{border-bottom:1px solid var(--line); padding:9px 14px 9px 0; vertical-align:top;}
-  td.s{font-family:var(--mono); font-size:.8rem; white-space:nowrap; color:var(--accent); font-weight:600;}
-  td.d{font-family:var(--mono); font-size:.8rem; white-space:nowrap; color:var(--muted); font-variant-numeric:tabular-nums;}
-  .tip{
-    background:var(--accent-soft); border-left:4px solid var(--accent); border-radius:0 4px 4px 0;
-    padding:12px 16px; margin:14px 0 20px; max-width:70ch;
+  h2::before{                                  /* station number, machine-readout style */
+    content:counter(sec, decimal-leading-zero);
+    position:absolute; top:0; left:0;
+    font-family:var(--mono); font-size:.7rem; font-weight:400;
+    letter-spacing:.24em; color:var(--cu);
   }
-  .tip p{margin:0;}
-  .caution{
-    background:var(--warn-soft); border-left:4px solid var(--warn); border-radius:0 4px 4px 0;
-    padding:12px 16px; margin:14px 0 20px; max-width:70ch;
+  h2::after{                                   /* hot copper underline glow */
+    content:""; position:absolute; left:0; bottom:-1px;
+    width:64px; height:2px; border-radius:2px;
+    background:linear-gradient(90deg, var(--cu-deep), var(--cu-hot));
+    box-shadow:0 0 12px rgba(217,106,56,.55);
   }
-  .caution p{margin:0;}
-  .caution .lbl,.tip .lbl{
-    font-family:var(--mono); font-size:.68rem; letter-spacing:.09em; display:block; margin-bottom:4px;
+  main.doc > h2:first-of-type{margin-top:30px;}
+  h3{
+    font-family:var(--disp); color:var(--ink-strong);
+    font-size:1.08rem; font-weight:650; letter-spacing:-.005em;
+    margin:30px 0 9px; display:flex; align-items:center; gap:9px;
   }
-  .tip .lbl{color:var(--accent);}
-  .caution .lbl{color:var(--warn);}
-  .steps li{margin-bottom:10px;}
-  .qa dt{font-weight:650; margin-top:18px;}
-  .qa dd{margin:6px 0 0 0; max-width:68ch;}
-  footer{margin-top:64px; padding-top:20px; border-top:1px solid var(--line); color:var(--muted); font-size:.9rem;}
-  a{color:var(--accent);}
+  h3::before{                                  /* a single voxel */
+    content:""; width:8px; height:8px; flex:none;
+    border:1.5px solid var(--cu); border-radius:2px;
+    box-shadow:0 0 6px rgba(217,106,56,.4);
+  }
+  h3.ver{
+    display:inline-flex; font-family:var(--mono); font-weight:600;
+    font-size:.95rem; letter-spacing:.06em;
+    border:1px solid var(--line-2); border-radius:var(--chip-r);
+    background:var(--panel); padding:5px 14px; margin:30px 0 12px;
+  }
+  h3.ver::before{border-color:var(--cu-hot);}
+  p{margin:0 0 14px; max-width:70ch;}
+  ul,ol{margin:0 0 16px; padding-left:24px; max-width:68ch;}
+  li{margin-bottom:7px;}
+  li::marker{color:var(--faint);}
+  strong{font-weight:650; color:var(--ink-strong);}
+  em{color:var(--ink-strong);}
+  a{color:var(--cu-hot); text-decoration:underline; text-decoration-color:rgba(217,106,56,.4); text-underline-offset:3px;}
+  a:hover, a:focus-visible{text-decoration-color:var(--cu-hot);}
+  code{
+    font-family:var(--mono); font-size:.82em; color:#EBBF9F;
+    background:var(--panel-2); border:1px solid var(--line);
+    padding:1px 6px 2px; border-radius:3px 6px 3px 6px; white-space:nowrap;
+  }
+  .steps li{margin-bottom:11px;}
+  .steps li::marker{
+    font-family:var(--mono); font-size:.85em; font-weight:600; color:var(--cu);
+  }
+
+  /* ============ TABLES — the machine readout ============ */
+  .tablewrap{
+    overflow-x:auto; margin:12px 0 26px;
+    border:1px solid var(--line); border-radius:var(--plate-r);
+    background:var(--panel);
+  }
+  table{border-collapse:collapse; width:100%; min-width:620px; font-size:.9rem;}
+  th{
+    text-align:left; font-family:var(--mono); font-weight:600;
+    font-size:.66rem; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--dim); background:var(--panel-2);
+    border-bottom:1px solid var(--line-2);
+    padding:10px 16px; white-space:nowrap;
+  }
+  td{
+    border-bottom:1px solid var(--line);
+    padding:11px 16px; vertical-align:top;
+  }
+  tr:last-child td{border-bottom:0;}
+  tbody tr:hover td, table tr:hover td{background:rgba(217,106,56,.035);}
+  td.s{
+    font-family:var(--mono); font-size:.78rem; white-space:nowrap;
+    color:var(--cu-hot); font-weight:600; letter-spacing:.01em;
+  }
+  td.d{
+    font-family:var(--mono); font-size:.78rem; white-space:nowrap;
+    color:var(--dim); font-variant-numeric:tabular-nums;
+  }
+
+  /* ============ CALLOUTS — stamped plates ============ */
+  .tip,.caution{
+    position:relative; border-radius:var(--plate-r);
+    border:1px solid var(--line); border-left-width:3px;
+    padding:14px 18px 13px; margin:16px 0 22px; max-width:70ch;
+    background:var(--panel);
+  }
+  .tip{border-left-color:var(--steel); background:linear-gradient(180deg, rgba(147,180,191,.06), rgba(147,180,191,.02)), var(--panel);}
+  .caution{border-left-color:var(--cu-ember); background:linear-gradient(180deg, rgba(200,74,46,.08), rgba(200,74,46,.02)), var(--panel);}
+  .tip p,.caution p{margin:0;}
+  .tip .lbl,.caution .lbl{
+    font-family:var(--mono); font-size:.64rem; letter-spacing:.18em;
+    display:block; margin-bottom:6px;
+  }
+  .tip .lbl{color:var(--steel);}
+  .caution .lbl{color:var(--cu-hot);}
+  .caution .lbl::before, .tip .lbl::before{
+    content:""; display:inline-block; width:6px; height:6px;
+    border-radius:1.5px; margin-right:8px; vertical-align:0;
+  }
+  .tip .lbl::before{background:var(--steel); box-shadow:0 0 6px rgba(147,180,191,.6);}
+  .caution .lbl::before{background:var(--cu-ember); box-shadow:0 0 6px rgba(200,74,46,.7);}
+
+  /* ============ TROUBLESHOOTING ============ */
+  .qa dt{
+    font-weight:650; color:var(--ink-strong);
+    margin-top:22px; padding:14px 0 0 18px; position:relative;
+    border-top:1px solid var(--line);
+  }
+  .qa dt:first-of-type{border-top:0; padding-top:0; margin-top:14px;}
+  .qa dt::before{
+    content:""; position:absolute; left:0; top:1.28em; width:8px; height:8px;
+    border:1.5px solid var(--cu); border-radius:2px;
+  }
+  .qa dt:first-of-type::before{top:.42em;}
+  .qa dd{margin:7px 0 0 18px; max-width:66ch; color:var(--ink);}
+
+  /* ============ CHANGELOG ============ */
+  .log li{margin-bottom:10px;}
+  .tag{
+    font-family:var(--mono); font-size:.68rem; font-weight:600;
+    letter-spacing:.12em; text-transform:uppercase;
+    padding:2px 8px 3px; border-radius:var(--chip-r); margin-right:7px;
+    white-space:nowrap;
+  }
+  .tag--new{color:var(--cu-hot); border:1px solid rgba(217,106,56,.4); background:rgba(217,106,56,.09);}
+  .tag--changed{color:var(--steel); border:1px solid rgba(147,180,191,.35); background:rgba(147,180,191,.07);}
+  .tag--fixed{color:var(--amber); border:1px solid rgba(216,178,92,.35); background:rgba(216,178,92,.07);}
+
+  /* ============ FOOTER ============ */
+  footer{
+    margin-top:78px; padding-top:24px; position:relative;
+    border-top:1px solid var(--line); color:var(--dim); font-size:.88rem;
+  }
+  footer::before{
+    content:""; position:absolute; left:0; top:-1px;
+    width:40px; height:2px; border-radius:2px;
+    background:linear-gradient(90deg, var(--cu-deep), var(--cu-hot));
+    box-shadow:0 0 10px rgba(217,106,56,.5);
+  }
+  footer strong{color:var(--ink);}
+
+  @media (max-width:480px){
+    body{font-size:15.5px;}
+    .mast-in{padding-top:44px;}
+    .mast-copy{padding-bottom:28px;}
+    h2{margin-top:54px;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation:none!important; transition:none!important;}
+    html{scroll-behavior:auto;}
+    .motif .draw{stroke-dasharray:none; stroke-dashoffset:0;}
+  }
 </style>
 </head>
 <body>
-<div class="band"><div class="inner">
-  <h1>Smooth Operator</h1>
-  <p class="sub">SDF voxel remesher for Blender — documentation</p>
-  <div class="meta">
-    <span>VERSION 1.1.0</span>
-    <span>REQUIRES BLENDER 5.1+</span>
-    <span>GPL-3.0-OR-LATER</span>
-  </div>
-</div></div>
 
-<div class="wrap">
+<header class="mast">
+  <div class="mast-in">
+    <div class="mast-copy">
+      <h1>Smooth <span class="cu">Operator</span></h1>
+      <p class="sub">SDF voxel remesher for Blender — documentation</p>
+      <p class="tagline">Blender's voxel remesh, with the controls OpenVDB always had.</p>
+      <div class="meta">
+        <span>VERSION 1.1.0</span>
+        <span>REQUIRES BLENDER 5.1+</span>
+        <span>GPL-3.0-OR-LATER</span>
+      </div>
+    </div>
+    <!-- voxel stair easing into a silk curve: the whole product in one stroke -->
+    <svg class="motif" viewBox="0 0 520 150" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="cu-grad" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0" stop-color="#8C3120"/>
+          <stop offset=".55" stop-color="#D96A38"/>
+          <stop offset="1" stop-color="#F5A87B"/>
+        </linearGradient>
+      </defs>
+      <!-- ghost voxel cells under the stair -->
+      <g stroke="#2B2117" stroke-width="1" fill="none">
+        <rect x="8"   y="106" width="26" height="26"/>
+        <rect x="34"  y="106" width="26" height="26"/>
+        <rect x="34"  y="80"  width="26" height="26"/>
+        <rect x="60"  y="80"  width="26" height="26"/>
+        <rect x="86"  y="80"  width="26" height="26"/>
+        <rect x="86"  y="54"  width="26" height="26"/>
+        <rect x="112" y="54"  width="26" height="26"/>
+        <rect x="138" y="54"  width="26" height="26"/>
+        <rect x="138" y="28"  width="26" height="26"/>
+        <rect x="164" y="28"  width="26" height="26"/>
+      </g>
+      <!-- glow pass -->
+      <path class="draw" d="M8 132 H60 V106 H86 V80 H138 V54 H164 V28 H190
+               C252 28 266 21.5 330 21 C400 20.5 462 21 514 21"
+            fill="none" stroke="url(#cu-grad)" stroke-width="8" opacity=".16"/>
+      <!-- the surface -->
+      <path class="draw" d="M8 132 H60 V106 H86 V80 H138 V54 H164 V28 H190
+               C252 28 266 21.5 330 21 C400 20.5 462 21 514 21"
+            fill="none" stroke="url(#cu-grad)" stroke-width="2.25"/>
+      <!-- hot voxels riding the steps, cooling as the surface smooths -->
+      <g fill="#D96A38">
+        <rect x="55"  y="101" width="6" height="6" rx="1" opacity=".95"/>
+        <rect x="81"  y="75"  width="6" height="6" rx="1" opacity=".7"/>
+        <rect x="133" y="49"  width="6" height="6" rx="1" opacity=".45"/>
+        <rect x="159" y="23"  width="6" height="6" rx="1" opacity=".22"/>
+      </g>
+    </svg>
+  </div>
+</header>
+
+<div class="layout">
 
 <nav class="toc" aria-label="Contents">
   <a href="#install">Install</a>
@@ -99,6 +403,8 @@
   <a href="#troubleshooting">Troubleshooting</a>
   <a href="#changelog">Changelog</a>
 </nav>
+
+<main class="doc">
 
 <h2 id="install">Install</h2>
 <p><strong>Blender 5.1 or newer is required.</strong> The SDF grid nodes this tool is built on don't exist in older versions — Blender will refuse to enable it there, with a version message.</p>
@@ -223,21 +529,21 @@
 </dl>
 
 <h2 id="changelog">Changelog</h2>
-<h3>1.1.0</h3>
-<ul>
-  <li><strong>New:</strong> voxel-size crash guard — catastrophe-level Voxel Size requests are clamped, with a warning on the modifier that states the effective size and the Max Resolution needed for the requested one. Surface-area-based budget (default ~24M faces) in the Safety panel — calibrated so deliberate fine-voxel work always passes untouched.</li>
-  <li><strong>New:</strong> deleting the last Smooth Operator of a stack hands its role to the previous pass automatically — Smooth Normals (carrying the deleted pass's on/off choice) and the preview Adaptivity move over. A pass with a boolean still after it is never given normals, and renaming modifiers never triggers any of this.</li>
-  <li><strong>New:</strong> old files upgrade automatically the moment they're opened — no button press needed.</li>
-  <li><strong>New:</strong> Preview Mode — the last remesh of every stack carries a preview Adaptivity for a fast viewport; off restores the bake-safe grid; Collapse always bakes final quality.</li>
-  <li><strong>Changed:</strong> the built-in Subdivide / Use Creases inputs were removed — use Blender's own Subdivision Surface modifier above the remesh. Old files upgrade automatically with a matching Subdivision Surface inserted, so results don't change.</li>
-  <li><strong>Changed:</strong> modifiers are created with edit-mode display off, keeping quick edit-mode fixes fast.</li>
-  <li><strong>Changed:</strong> "Smooth Width" is now <strong>Filter Width</strong> and sits directly under the two filters it scales (Smoothness and Despike).</li>
-  <li><strong>Changed:</strong> the arrow buttons on Voxel Size and Inflate/Deflate step in millimeters instead of whole centimeters.</li>
-  <li><strong>Fixed:</strong> blotchy shading normals with Filter Width above 1 (the SDF's narrow band now scales with the filter settings) and while Despike is active (the normal source gets a small smoothing pass; the surface is untouched).</li>
+<h3 class="ver">1.1.0</h3>
+<ul class="log">
+  <li><strong class="tag tag--new">New:</strong> voxel-size crash guard — catastrophe-level Voxel Size requests are clamped, with a warning on the modifier that states the effective size and the Max Resolution needed for the requested one. Surface-area-based budget (default ~24M faces) in the Safety panel — calibrated so deliberate fine-voxel work always passes untouched.</li>
+  <li><strong class="tag tag--new">New:</strong> deleting the last Smooth Operator of a stack hands its role to the previous pass automatically — Smooth Normals (carrying the deleted pass's on/off choice) and the preview Adaptivity move over. A pass with a boolean still after it is never given normals, and renaming modifiers never triggers any of this.</li>
+  <li><strong class="tag tag--new">New:</strong> old files upgrade automatically the moment they're opened — no button press needed.</li>
+  <li><strong class="tag tag--new">New:</strong> Preview Mode — the last remesh of every stack carries a preview Adaptivity for a fast viewport; off restores the bake-safe grid; Collapse always bakes final quality.</li>
+  <li><strong class="tag tag--changed">Changed:</strong> the built-in Subdivide / Use Creases inputs were removed — use Blender's own Subdivision Surface modifier above the remesh. Old files upgrade automatically with a matching Subdivision Surface inserted, so results don't change.</li>
+  <li><strong class="tag tag--changed">Changed:</strong> modifiers are created with edit-mode display off, keeping quick edit-mode fixes fast.</li>
+  <li><strong class="tag tag--changed">Changed:</strong> "Smooth Width" is now <strong>Filter Width</strong> and sits directly under the two filters it scales (Smoothness and Despike).</li>
+  <li><strong class="tag tag--changed">Changed:</strong> the arrow buttons on Voxel Size and Inflate/Deflate step in millimeters instead of whole centimeters.</li>
+  <li><strong class="tag tag--fixed">Fixed:</strong> blotchy shading normals with Filter Width above 1 (the SDF's narrow band now scales with the filter settings) and while Despike is active (the normal source gets a small smoothing pass; the surface is untouched).</li>
   <li>Upgrade safety: modifiers that were deliberately running finer than the default cap keep their exact results after updating (the cap seeds itself from the voxel in use).</li>
 </ul>
-<h3>1.0.0</h3>
-<ul>
+<h3 class="ver">1.0.0</h3>
+<ul class="log">
   <li>Initial release: SDF voxel remesher with OpenVDB level-set filters (Smoothness / Despike / Relax / Concave Smooth), automatic material transfer, SDF-gradient smooth normals, per-element remeshing, crease-aware pre-subdivision, and the workflow button set (stacking Remesh, visibility toggles, Decimate, Collapse).</li>
 </ul>
 
@@ -246,7 +552,36 @@
   Smooth Operator © Pedro Amorim · add-on code licensed GPL-3.0-or-later · requires Blender 5.1+</p>
 </footer>
 
+</main>
 </div>
+
+<script>
+(function(){
+  "use strict";
+  if(!("IntersectionObserver" in window)) return;
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.toc a[href^="#"]'));
+  if(!links.length) return;
+  var map = {};
+  links.forEach(function(a){ map[a.getAttribute("href").slice(1)] = a; });
+  var current = null;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        var a = map[e.target.id];
+        if(a && a !== current){
+          if(current) current.removeAttribute("aria-current");
+          a.setAttribute("aria-current", "true");
+          current = a;
+        }
+      }
+    });
+  }, {rootMargin: "-8% 0px -78% 0px"});
+  Object.keys(map).forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) obs.observe(el);
+  });
+})();
+</script>
 
 </body>
 </html>
