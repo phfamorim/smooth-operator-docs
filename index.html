@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="description" content="Documentation for Smooth Operator, the SDF voxel remesher for Blender 5.1+ - install, settings reference, workflows, troubleshooting.">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#129482;</text></svg>"><title>Smooth Operator — Documentation</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>&#129482;</text></svg>">
+<title>Smooth Operator — Documentation</title>
 <style>
   :root{
     --ink:#1D2426; --muted:#5D6B69; --paper:#FFFFFF;
@@ -145,7 +146,7 @@
 <p>Every voxel remesher has the same horror story: a Voxel Size typo — 0.0001 on a 2-meter prop — and Blender freezes with your unsaved work. Smooth Operator clamps a Voxel Size finer than the surface can afford to a safety floor, inside the modifier itself. The mesh still generates (just capped) and an <strong>orange warning appears on the modifier</strong>. Fix the value, or raise the cap deliberately:</p>
 <div class="tablewrap"><table>
   <tr><th>Setting</th><th>Default</th><th>What it does</th></tr>
-  <tr><td class="s">Max Resolution</td><td class="d">500</td><td>The density cap behind the guard. For a compact object it means "at most this many voxels along the longest side"; sparse and multi-piece objects are budgeted by surface area, so they aren't penalized for a big bounding box. Raise it when you really need extreme density — 500 already allows roughly 1.5 million faces.</td></tr>
+  <tr><td class="s">Max Resolution</td><td class="d">2000</td><td>The face budget behind the guard — a catastrophe net, not a taste police. The default (~24 million faces) is high enough that deliberate fine-voxel work passes untouched, so the same Voxel Size always means the same physical voxels on every object; only typo-level requests get clamped. When a clamp does engage, the warning states the effective size <em>and</em> the Max Resolution needed for your requested one. Lower the budget on weaker machines, raise it for extreme density.</td></tr>
 </table></div>
 <div class="caution"><span class="lbl">SCOPE, HONESTLY</span>
 <p>The guard covers Voxel Size — the classic remesher freeze. It won't rescue a 50-million-poly boolean elsewhere in your stack, or a Subdivision Surface modifier cranked on a dense mesh.</p></div>
